@@ -1,70 +1,14 @@
-import React, { Fragment, useEffect } from 'react';
-
-import Buttons from '../../components/Buttons/Button';
-import Input from '../../components/Inputs/Inputs';
+import React, { Fragment, useEffect, useContext } from 'react';
 import Typography from '@material-ui/core/Typography';
-import Audio from '../../components/Player/Audio';
-import axios from 'axios';
-import Avatar from '@material-ui/core/Avatar';
-import Button from '@material-ui/core/Button';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-import Link from '@material-ui/core/Link';
-import Grid from '@material-ui/core/Grid';
-import Box from '@material-ui/core/Box';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import { makeStyles } from '@material-ui/core/styles';
-import Container from '@material-ui/core/Container';
-import QuestionAnswerSharpIcon from '@material-ui/icons/QuestionAnswerSharp';
-import PlayCircleFilledWhiteOutlinedIcon from '@material-ui/icons/PlayCircleFilledWhiteOutlined';
-import CheckCircleOutlineOutlinedIcon from '@material-ui/icons/CheckCircleOutlineOutlined';
-import { green, blue } from '@material-ui/core/colors';
-import { calculatePercentage } from '../../Helpers/helper';
+import { useStyles } from '../../utils/styles/home';
+import Buttons from '../../components/Buttons/Button';
+import { observer } from 'mobx-react-lite';
+import { MainStore } from '../../mobX/store';
 
-const useStyles = makeStyles((theme) => ({
-	paper: {
-		marginTop: theme.spacing(8),
-		display: 'flex',
-		flexDirection: 'column',
-		alignItems: 'center',
-	},
-	avatar: {
-		margin: theme.spacing(1),
-		backgroundColor: theme.palette.primary.main,
-	},
-	form: {
-		width: '100%', // Fix IE 11 issue.
-		marginTop: theme.spacing(1),
-	},
-	submit: {
-		margin: theme.spacing(3, 0, 1),
-		textAlign: 'center',
-		border: `.5px solid #ededed`,
-		color: blue[900],
-		borderRadius: '3px',
-		width: '100px',
-		padding: theme.spacing(0.2, 0.3),
-	},
-	text: {
-		padding: '1rem 1.2rem 0',
-		fontSize: '12px',
-	},
-	textSmall: {
-		padding: '.3rem 1.2rem',
-		fontSize: '13px',
-		color: blue[900],
-		margin: '1rem',
-	},
-	content: {
-		justifyContent: 'center',
-	},
-}));
-
-const Landing = (props: any) => {
+const Landing = observer((props: any) => {
 	const classes = useStyles();
 	const { history } = props;
+	const store = useContext(MainStore);
 	const passed = localStorage.getItem('passed');
 	const totalQuestions = localStorage.getItem('totalQuestions');
 
@@ -72,33 +16,38 @@ const Landing = (props: any) => {
 		if (!passed || !totalQuestions) {
 			history.push('/');
 		}
-		// return () => {
-		//     cleanup
-		// };
-	}, []);
-	const reWrite = () => {
-		localStorage.clear();
-		history.push('/');
+    }, [history, passed, totalQuestions]);
+    
+	const pressStart = async (event: any) => {
+		event.preventDefault();
+		try {
+			await store.fetchWords();
+            store.start = true;
+			store.speltWord = false;
+			store.wrongWord = false;
+			store.number++;
+			history.push('/start');
+		} catch (error) {
+			store.error = 'Server error or no connection to the server';
+		}
 	};
 
 	return (
 		<Fragment>
-			<Container component="main" maxWidth="xs">
-				<CssBaseline />
-				<div className={classes.paper}>
-					<Avatar className={classes.avatar}>
-						<CheckCircleOutlineOutlinedIcon />
-					</Avatar>
-					<Typography component="h4" className={classes.text}>
-						Scored : <strong>{calculatePercentage(totalQuestions, passed)}</strong>
-					</Typography>
-					<Button onClick={reWrite} className={classes.textSmall}>
-						Start again
-					</Button>
-				</div>
-			</Container>
+			<div className={classes.paper}>
+				<Typography component="h1" variant="h4">
+					Welcome
+				</Typography>
+				<Typography component="h3" variant="h4" className={classes.textIntroduction}>
+					Welcome to the spelling exercise
+				</Typography>
+				<Typography component="h3" variant="h3" className={classes.textIntro}>
+					<strong>Click on the button start</strong>
+				</Typography>
+				<Buttons variant="contained" color="secondary" name="start" pressStart={pressStart} type="start" />
+			</div>
 		</Fragment>
 	);
-};
+});
 
 export default Landing;

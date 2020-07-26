@@ -1,14 +1,8 @@
 import React, { Fragment } from 'react';
 import { Button } from '@material-ui/core';
-import { withStyles, makeStyles } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 import { green, blue } from '@material-ui/core/colors';
-
-const useStyles = makeStyles((theme) => ({
-	margin: {
-		margin: theme.spacing(4, 0),
-		width: '200px',
-	},
-}));
+import { useStyles } from '../../utils/styles/buttons';
 
 const Buttons = (props: any) => {
 	const { name, color, variant, submit, pressNext, type, pressStart } = props;

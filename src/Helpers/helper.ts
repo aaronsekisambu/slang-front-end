@@ -1,4 +1,3 @@
-import { parse } from "path";
 
 export const calculatePercentage = (total: any, passed: any) => {
     const eachMark = Math.ceil(100 / parseInt(total));

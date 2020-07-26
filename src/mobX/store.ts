@@ -1,8 +1,6 @@
 import { createContext } from 'react';
-import { observable, action, runInAction, decorate } from 'mobx';
+import { observable, action, runInAction } from 'mobx';
 import axios from 'axios';
-
-// mobx.configure({ enforceActions: 'observed' });
 
 export enum FETCH_STATUS {
 	FETCH_DONE = 'FETCH_DONE',
@@ -13,8 +11,11 @@ export enum FETCH_STATUS {
 
 class Store {
 	@observable words: any = [];
-	// @observable state = 'pending'; // "pending" / "done" / "error"
-	@observable number = 0;
+	@observable number: number = 0;
+	@observable speltWord: Boolean = false;
+	@observable wrongWord: Boolean = false;
+	@observable start: Boolean = false;
+	@observable error: string = '';
 	@observable status: FETCH_STATUS = FETCH_STATUS.NONE;
 
 	@action
@@ -31,8 +32,8 @@ class Store {
 			const getWords = await axios.post(URL, { number: this.number });
 			const {
 				data: { data },
-            } = getWords;
-			// after await, modifying state again, needs an actions:
+			} = getWords;
+
 			runInAction(() => {
 				this.status = FETCH_STATUS.FETCH_DONE;
 				this.words = data;
