@@ -1,4 +1,6 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { Fragment, useState, useContext } from 'react';
+import { toJS } from 'mobx';
+import { observer } from 'mobx-react-lite';
 import Buttons from '../../components/Buttons/Button';
 import Input from '../../components/Inputs/Inputs';
 import Typography from '@material-ui/core/Typography';
@@ -15,6 +17,7 @@ import Container from '@material-ui/core/Container';
 import QuestionAnswerSharpIcon from '@material-ui/icons/QuestionAnswerSharp';
 import PlayCircleFilledWhiteOutlinedIcon from '@material-ui/icons/PlayCircleFilledWhiteOutlined';
 import { green, blue, grey, red } from '@material-ui/core/colors';
+import { MainStore } from '../../mobX/store';
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -64,7 +67,7 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-const Home = (props: any) => {
+const Home = observer((props: any) => {
 	const { history } = props;
 	const [spelt, setSpelt] = useState('');
 	const [correctWord, setCorrectWord] = useState('');
@@ -79,7 +82,9 @@ const Home = (props: any) => {
 	const [passed, setPassed] = useState(0);
 	const classes = useStyles();
 
-	const questionCount = number === 0 ? 1 : number;
+	const store = useContext(MainStore);
+
+	const questionCount = store.number === 0 ? 1 : store.number;
 
 	const spelling = (event: any) => {
 		setSpelt(event.target.value);
@@ -99,65 +104,53 @@ const Home = (props: any) => {
 	};
 	const pressNext = async (event: any, number: number) => {
 		event.preventDefault();
-		const URL = `${process.env.REACT_APP_API_BACKEND_URL}/start-now`;
 		try {
 			if (speltWord) {
 				setPassed(passed + 1);
 			}
 			if (questionCount === totalQuestions) {
 				localStorage.setItem('passed', `${passed}`);
-				localStorage.setItem('totalQuestions', `${totalQuestions}`);
+				localStorage.setItem('totalQuestions', `${store.words.totalQuestions}`);
 				history.push('/result');
 			}
-			if (number < totalQuestions) {
-				setNumber(number + 1);
-				const getWords = await axios.post(URL, { number });
-				const {
-					data: { data },
-				} = getWords;
-				setRemainingQuestions(data.remainingQuestions);
-				setTotalQuestions(data.totalQuestions);
-				setCorrectWord(data.originalWord);
+			if (store.number < store.words.totalQuestions) {
+				store.number++;
+				await store.fetchWords();
 				setWrongWord(false);
 				setSpeltWord(false);
-				setShuffled(data.shuffledWord);
 			}
 		} catch (error) {
 			setError('Server error or no connection to the server');
 		}
 	};
 
-	const pressStart = async (event: any, number: number) => {
+	const pressStart = async (event: any,) => {
 		event.preventDefault();
-		const URL = `${process.env.REACT_APP_API_BACKEND_URL}/start-now`;
 		try {
-			setNumber(number + 1);
-			const getWords = await axios.post(URL, { number });
-			const {
-				data: { data },
-			} = getWords;
-			setRemainingQuestions(data.remainingQuestions);
-			setTotalQuestions(data.totalQuestions);
-			setCorrectWord(data.originalWord);
+			await store.fetchWords();
 			setWrongWord(false);
 			setSpeltWord(false);
-			return setShuffled(data.shuffledWord);
+			store.number++;
 		} catch (error) {
 			setError('Server error or no connection to the server');
 		}
 	};
+
 	return (
 		<Fragment>
 			<Container component="main" maxWidth="xs">
 				<CssBaseline />
 				<div className={classes.paper}>
-					{shuffled ? (
+					{store.words.shuffledWord ? (
 						<div className={classes.paper}>
 							<Avatar className={classes.avatar}>
 								<QuestionAnswerSharpIcon />
 							</Avatar>
 
-							<Typography component="h5"> {`Question: ${questionCount}/${totalQuestions}`}</Typography>
+							<Typography component="h5">
+								{' '}
+								{`Question: ${questionCount}/${store.words.totalQuestions}`}
+							</Typography>
 							<Typography component="h4" className={classes.text}>
 								Re-arrange the scramble or shuffled word below. In a meaningful and correct word.
 							</Typography>
@@ -170,10 +163,12 @@ const Home = (props: any) => {
 							<Grid container className={classes.content}>
 								<Grid item>
 									<Typography className={classes.submit}>
-										<strong>{shuffled}</strong>
+										<strong>{store.words.shuffledWord}</strong>
 									</Typography>
 								</Grid>
-								<Grid item>{speltWord || wrongWord ? '' : <Audio source={correctWord} />}</Grid>
+								<Grid item>
+									{speltWord || wrongWord ? '' : <Audio source={store.words.originalWord} />}
+								</Grid>
 							</Grid>
 							<Grid item>
 								{speltWord || wrongWord ? '' : <Input spelling={spelling} spelt={spelt} />}
@@ -205,7 +200,7 @@ const Home = (props: any) => {
 										variant="contained"
 										color="primary"
 										name="next"
-										pressNext={(event: any) => pressNext(event, number)}
+										pressNext={pressNext}
 										type="next"
 									/>
 								) : (
@@ -231,7 +226,7 @@ const Home = (props: any) => {
 								variant="contained"
 								color="secondary"
 								name="start"
-								pressStart={(event: any) => pressStart(event, number)}
+								pressStart={pressStart}
 								type="start"
 							/>
 						</div>
@@ -240,6 +235,6 @@ const Home = (props: any) => {
 			</Container>
 		</Fragment>
 	);
-};
+});
 
 export default Home;
