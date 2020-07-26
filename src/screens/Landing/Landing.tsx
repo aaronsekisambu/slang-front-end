@@ -25,7 +25,6 @@ const Landing = observer((props: any) => {
             store.start = true;
 			store.speltWord = false;
 			store.wrongWord = false;
-			store.number++;
 			history.push('/start');
 		} catch (error) {
 			store.error = 'Server error or no connection to the server';

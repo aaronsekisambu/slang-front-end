@@ -26,8 +26,6 @@ const Home = observer((props: any) => {
 
 	const store = useContext(MainStore);
 
-	const questionCount = store.number === 0 ? 1 : store.number;
-
 	useEffect(() => {
 		if (!store.start) {
 			history.push('/');
@@ -56,7 +54,6 @@ const Home = observer((props: any) => {
 			if (store.speltWord) {
 				setPassed(passed + 1);
 			}
-			console.log(passed);
 			const lastIndexedWord = store.words.totalQuestions - 1;
 			if (store.number === lastIndexedWord) {
 				localStorage.setItem('passed', `${passed}`);
@@ -79,7 +76,6 @@ const Home = observer((props: any) => {
 		margin: 0 auto;
 		border-color: red;
 	`;
-	console.log(passed);
 	return (
 		<Fragment>
 			<Container component="main" maxWidth="xs">
@@ -93,7 +89,7 @@ const Home = observer((props: any) => {
 
 							<Typography component="h5">
 								{' '}
-								{`Question: ${questionCount}/${store.words.totalQuestions}`}
+								{`Question: ${store.number}/${store.words.totalQuestions}`}
 							</Typography>
 							<Typography component="h4" className={classes.text}>
 								Re-arrange the scramble or shuffled word below. In a meaningful and correct word.

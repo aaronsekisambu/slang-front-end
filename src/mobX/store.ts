@@ -12,6 +12,7 @@ export enum FETCH_STATUS {
 class Store {
 	@observable words: any = [];
 	@observable number: number = 0;
+	@observable passed: number = 0;
 	@observable speltWord: Boolean = false;
 	@observable wrongWord: Boolean = false;
 	@observable start: Boolean = false;
