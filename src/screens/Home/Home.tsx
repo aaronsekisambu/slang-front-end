@@ -23,7 +23,6 @@ const Home = observer((props: any) => {
 	const [answer, setAnswer] = useState('');
 	const [passed, setPassed] = useState(0);
 	const classes = useStyles();
-
 	const store = useContext(MainStore);
 
 	useEffect(() => {
@@ -38,6 +37,7 @@ const Home = observer((props: any) => {
 
 	const submit = () => {
 		if (spelt.toLowerCase() === store.words.originalWord.toLowerCase()) {
+			setPassed(passed === 0 ? 1 : passed + 1);
 			store.speltWord = true;
 			store.wrongWord = false;
 			store.error = '';
@@ -51,9 +51,6 @@ const Home = observer((props: any) => {
 	const pressNext = async (event: any) => {
 		event.preventDefault();
 		try {
-			if (store.speltWord) {
-				setPassed(passed + 1);
-			}
 			const lastIndexedWord = store.words.totalQuestions - 1;
 			if (store.number === lastIndexedWord) {
 				localStorage.setItem('passed', `${passed}`);
@@ -64,7 +61,7 @@ const Home = observer((props: any) => {
 				store.number++;
 				await store.fetchWords();
 				store.wrongWord = false;
-				return store.speltWord = false;
+				return (store.speltWord = false);
 			}
 		} catch (error) {
 			return (store.error = 'Server error or no connection to the server');
